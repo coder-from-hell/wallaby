@@ -188,12 +188,18 @@ defmodule Wallaby.Chrome.Chromedriver.Server do
     Path.absname("priv/run_command.sh", Application.app_dir(:wallaby))
   end
 
-  defp args(chromedriver, port),
-    do: [
+  defp args(chromedriver, port) do
+    log_file =
+      Application.get_env(:wallaby, :chromedriver)[:chromedriver_log_file] ||
+        "chromedriver_log.log"
+
+    [
       chromedriver,
-      "--log-level=OFF",
-      "--port=#{port}"
+      "--verbose",
+      "--port=#{port}",
+      "--log-path=#{log_file}"
     ]
+  end
 
   defp port_opts(chromedriver, tcp_port),
     do: [

@@ -142,8 +142,8 @@ defmodule Wallaby.Chrome do
 
   @doc false
   def init(_) do
-    max_chrome_driver_instances =
-      Application.get_env(:wallaby, :chromedriver)[:chrome_driver_instances] ||
+    max_chromedriver_instances =
+      Application.get_env(:wallaby, :chromedriver)[:chromedriver_instances] ||
         System.schedulers_online()
 
     children = [
@@ -151,7 +151,7 @@ defmodule Wallaby.Chrome do
       {PartitionSupervisor,
        child_spec: Wallaby.Chrome.Chromedriver,
        name: Wallaby.Chromedrivers,
-       partitions: max_chrome_driver_instances}
+       partitions: max_chromedriver_instances}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
