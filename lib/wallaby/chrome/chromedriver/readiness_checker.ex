@@ -22,6 +22,7 @@ defmodule Wallaby.Chrome.Chromedriver.ReadinessChecker do
     base_url
     |> build_config()
     |> WebDriverClient.fetch_server_status()
+    |> IO.inspect()
     |> case do
       {:ok, %ServerStatus{ready?: true}} -> true
       _ -> false
