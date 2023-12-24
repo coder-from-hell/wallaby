@@ -40,7 +40,9 @@ defmodule Wallaby.SessionStore do
 
     ExUnit.after_suite(fn _ ->
       try do
+        IO.puts("CLEARE SESSIONS AFTER SUITE")
         :ets.tab2list(tid)
+        |> then(fn sessions -> Enum.count(sessions)|> IO.inspect(label: "count"); sessions end)
         |> Enum.each(&delete_sessions/1)
       rescue
         _ -> nil
