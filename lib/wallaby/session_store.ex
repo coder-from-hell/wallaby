@@ -51,16 +51,22 @@ defmodule Wallaby.SessionStore do
   end
 
   def handle_call({:monitor, session}, {pid, _ref}, state) do
+    IO.puts("Session added to Storage")
+
     ref = Process.monitor(pid)
 
     :ets.insert(state.ets_table, {{ref, session.id, pid}, session})
 
     emit(%{module: __MODULE__, name: :monitor, metadata: %{monitored_session: session}})
 
+    IO.puts("Total number of sessions #{total_number_of_sessions(state)}")
+
     {:reply, :ok, state}
   end
 
   def handle_call({:demonitor, session}, _from, state) do
+    IO.puts("Manual deleting session")
+
     result =
       :ets.select(state.ets_table, [
         {{{:"$1", :"$2", :"$3"}, :_}, [{:==, :"$2", session.id}], [{{:"$1", :"$3"}}]}
@@ -75,10 +81,14 @@ defmodule Wallaby.SessionStore do
         :ok
     end
 
+    IO.puts("total sessions after deleting #{total_number_of_sessions(state)}")
+
     {:reply, :ok, state}
   end
 
   def handle_info({:DOWN, ref, :process, pid, _reason}, state) do
+    IO.puts("Test process is down deleting session")
+
     [session] =
       :ets.select(state.ets_table, [
         {{{:"$1", :_, :_}, :"$4"}, [{:==, :"$1", ref}], [:"$4"]}
@@ -90,10 +100,16 @@ defmodule Wallaby.SessionStore do
 
     emit(%{module: __MODULE__, name: :DOWN, metadata: %{monitored_session: session}})
 
+    IO.puts("total sessions after deleting #{total_number_of_sessions(state)}")
+
     {:noreply, state}
   end
 
   defp delete_sessions({_, session}) do
     WebdriverClient.delete_session(session)
+  end
+
+  defp total_number_of_sessions(state) do
+    :ets.tab2list(state.ets_table) |> Enum.count()
   end
 end
